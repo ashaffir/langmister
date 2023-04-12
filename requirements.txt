@@ -1,0 +1,6 @@
+openai
+python-dotenv
+gunicorn
+psycopg2-binary
+requests
+django-social-share

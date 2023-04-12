@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <!-- Meta, title, CSS, favicons, etc. -->
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Transmister | Transcriber Tool</title>
+  <title>{% block title %}{% endblock %}</title>
+  <!-- Bootstrap -->
+  <link href="{% static 'vendors/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="{% static 'vendors/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+  <!-- NProgress -->
+  <link href="{% static 'vendors/nprogress/nprogress.css' %}" rel="stylesheet">
+  <!-- jQuery custom content scroller -->
+  <link href="{% static 'vendors/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css' %}" rel="stylesheet" />
+
+  <!-- Custom Theme Style -->
+  <link href="{% static 'build/css/custom.min.css' %}" rel="stylesheet">
+</head>
+
+<body class="nav-md">
+  <div class="container body">
+    <div class="main_container">
+      <!-- Sidebar  -->
+      {% include 'main/includes/_sidebar.html' %}
+      <!-- End sidebar -->
+
+      <!-- top navigation -->
+      {% include 'main/includes/_top_navbar.html' %}
+      <!-- /top navigation -->
+
+      <!-- page content -->
+      <div class="right_col" role="main">
+        <div class="">
+          <div class="page-title">
+            {% block content %}
+            {% endblock content %}
+          </div>
+        </div>
+      </div>
+      <!-- /page content -->
+
+      <!-- footer content -->
+      <footer>
+        <div class="pull-right">
+          Transmister <a href="https://actappon.com">by Actappon</a>
+        </div>
+        <div class="clearfix"></div>
+      </footer>
+      <!-- /footer content -->
+    </div>
+  </div>
+
+  {% block js %}
+  {% endblock js %}
+  <!-- jQuery -->
+  <script src="{% static 'vendors/jquery/dist/jquery.min.js' %}"></script>
+  <!-- Bootstrap -->
+  <script src="{% static 'vendors/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+  <!-- FastClick -->
+  <script src="{% static 'vendors/fastclick/lib/fastclick.js' %}"></script>
+  <!-- NProgress -->
+  <script src="{% static 'vendors/nprogress/nprogress.js' %}"></script>
+  <!-- jQuery custom content scroller -->
+  <script src="{% static 'vendors/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js' %}"></script>
+
+  <!-- Custom Theme Scripts -->
+  <script src="{% static 'build/js/custom.min.js' %}"></script>
+</body>
+
+</html>

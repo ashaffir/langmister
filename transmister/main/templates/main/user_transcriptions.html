@@ -1,0 +1,131 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load social_share %}
+{% block content %}
+<div class="row">
+    <div class="col-sm-12">
+        <h1>My Transcriptions</h1>
+    </div>
+</div>
+<style>
+    li {
+        font-size: 2rem;
+    }
+
+    .limit {
+        max-width: 100%;
+        word-wrap: break-word;
+    }
+</style>
+<div class="x_panel">
+    <div class="x_title">
+        <h2><i class="fa fa-align-left"></i> </h2>
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        <!-- start accordion -->
+        <div class="accordion" id="accordion" role="tablist" aria-multiselectable="true">
+            {% for trans in transcs %}
+            <div class="panel">
+                <a class="panel-heading" role="tab" id="heading_{{ forloop.counter }}" data-toggle="collapse"
+                    data-parent="#accordion" href="#collapse_{{ forloop.counter }}" aria-expanded="false"
+                    aria-controls="collapse_{{ forloop.counter }}">
+                    <h4 class="panel-title">{{ trans.get_file_name }}</h4>
+                </a>
+                <div id="collapse_{{ forloop.counter }}" class="panel-collapse collapse in" role="tabpanel"
+                    aria-labelledby="heading_{{ forloop.counter }}">
+                    <div class="panel-body">
+                        <p class="limit">
+                            {% for line in trans.get_content %}
+                            {{ line }}
+                            <br>
+                            {% endfor %}
+                        </p>
+                    </div>
+                    <div class="panel-footer">
+                        <a href="{{ media_url }}/{{ trans.session }}/{{ trans.get_file_name }}"
+                            download="{{ trans.get_file_name }}" class="btn btn-warning">
+                            Download
+                        </a>
+
+                        {% post_to_whatsapp object_or_url "Share via WhatsApp" %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- end of accordion -->
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+    var recording = false;
+    var mediaRecorder;
+    var chunks = [];
+    var timer = null;
+    var recordingTime = 0;
+
+    function startRecording() {
+        console.log(`START...`);
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(function (stream) {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.addEventListener("dataavailable", function (event) {
+                    chunks.push(event.data);
+                });
+                mediaRecorder.addEventListener("stop", function () {
+                    var blob = new Blob(chunks, { type: "audio/wav" });
+                    clearInterval(timer);
+                    recordingTime = 0;
+                    var formData = new FormData();
+                    formData.append("audio_blob", blob, "recording.wav");
+                    formData.append("csrfmiddlewaretoken", '{{ csrf_token }}')
+                    $.ajax({
+                        url: "{% url 'main:upload' %}",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function () {
+                            chunks = [];
+                        }
+                    });
+                });
+                mediaRecorder.start();
+                recording = true;
+                startTimer();
+            });
+    }
+
+    function stopRecording() {
+        console.log(`STOP!`);
+        mediaRecorder.stop();
+        clearInterval(timer);
+        recordingTime = 0;
+        recording = false;
+    }
+
+    function startTimer() {
+        timer = setInterval(function () {
+            recordingTime++;
+            document.getElementById("recording-time").innerText = "Recording time: " + recordingTime + " seconds";
+        }, 1000);
+    }
+
+    document.getElementById("record-button").addEventListener("click", function () {
+        if (recording) {
+            stopRecording();
+            document.getElementById("record-button").innerText = "Record";
+            document.getElementById("recording-time").innerText = "";
+        } else {
+            console.log(`starting record...`);
+            startRecording();
+            document.getElementById("record-button").innerText = "Stop";
+        }
+    });
+</script>
+{% endblock js %}

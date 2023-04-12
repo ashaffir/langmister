@@ -1,0 +1,121 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-sm-12 col-lg-12 col-md-12 col-12">
+        <h1>Record and transcribe</h1>
+    </div>
+</div>
+<div class="row mb-5">
+    <div class="col-sm-12 col-lg-12 col-md-12 col-12">
+        <button id="record-button" class="btn btn-lg btn-primary">Record</button>
+        <span id="recording-time" style="margin-left: 10px;"></span>
+    </div>
+</div>
+<ul>
+    {% for rec in recordings.get_session_recordings %}
+    <li>{{ rec }}</li>
+    {% endfor %}
+</ul>
+<form action="{% url 'main:home' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm-12 col-lg-12 col-md-12 col-12">
+            <button class="btn btn-lg w-100 btn-warning" type="submit" name="transcribe">Transacribe</button>
+        </div>
+    </div>
+</form>
+
+<div class="row w-100">
+    <div class="col-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Audio text</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <div class="bs-example" data-example-id="simple-jumbotron">
+                    <div class="jumbotron">
+                        {{ transcription }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 col-lg-12 col-md-12 col-12">
+        <button class="btn btn-danger" onclick="location.reload();">Clear</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    var recording = false;
+    var mediaRecorder;
+    var chunks = [];
+    var timer = null;
+    var recordingTime = 0;
+
+    function startRecording() {
+        console.log(`START...`);
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(function (stream) {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.addEventListener("dataavailable", function (event) {
+                    chunks.push(event.data);
+                });
+                mediaRecorder.addEventListener("stop", function () {
+                    var blob = new Blob(chunks, { type: "audio/wav" });
+                    clearInterval(timer);
+                    recordingTime = 0;
+                    var formData = new FormData();
+                    formData.append("audio_blob", blob, "recording.wav");
+                    formData.append("csrfmiddlewaretoken", '{{ csrf_token }}')
+                    $.ajax({
+                        url: "{% url 'main:upload' %}",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function () {
+                            chunks = [];
+                        }
+                    });
+                });
+                mediaRecorder.start();
+                recording = true;
+                startTimer();
+            });
+    }
+
+    function stopRecording() {
+        console.log(`STOP!`);
+        mediaRecorder.stop();
+        clearInterval(timer);
+        recordingTime = 0;
+        recording = false;
+    }
+
+    function startTimer() {
+        timer = setInterval(function () {
+            recordingTime++;
+            document.getElementById("recording-time").innerText = "Recording time: " + recordingTime + " seconds";
+        }, 1000);
+    }
+
+    document.getElementById("record-button").addEventListener("click", function () {
+        if (recording) {
+            stopRecording();
+            document.getElementById("record-button").innerText = "Record";
+            document.getElementById("recording-time").innerText = "";
+        } else {
+            console.log(`starting record...`);
+            startRecording();
+            document.getElementById("record-button").innerText = "Stop";
+        }
+    });
+</script>
+{% endblock js %}
