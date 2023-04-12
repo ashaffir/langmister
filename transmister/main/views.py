@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 
 from transmister.settings import MEDIA_ROOT, MEDIA_URL
 from .models import Recording, Transcription
-from .utils import transcribe
+from .utils import transcribe, logger
 
 
 class HomeView(TemplateView):
@@ -20,11 +20,16 @@ class HomeView(TemplateView):
 
     def get(self, request):
         context = {}
-        session_id = request.session["session"]
-        session_path = f"{MEDIA_ROOT}/recordings/{request.session['session']}"
-        if glob.glob(f"{session_path}/transcript_{session_id}.txt"):
-            with open(f"{session_path}/transcript_{session_id}.txt", "r") as txt_file:
-                context["transcription"] = txt_file.read()
+        try:
+            session_id = request.session["session"]
+            session_path = f"{MEDIA_ROOT}/recordings/{request.session['session']}"
+            if glob.glob(f"{session_path}/transcript_{session_id}.txt"):
+                with open(
+                    f"{session_path}/transcript_{session_id}.txt", "r"
+                ) as txt_file:
+                    context["transcription"] = txt_file.read()
+        except:
+            logger.warning("no session ID exising. segging a new one")
 
         # Setting a new session ID (timestamp) for the files path
         request.session["session"] = int(datetime.timestamp(datetime.now()))
