@@ -3,8 +3,8 @@
 sudo supervisorctl reread
 sudo supervisorctl update
 sudo supervisorctl status all
-sudo supervisorctl status toromate
-sudo supervisorctl restart toromate
+sudo supervisorctl status langmister
+sudo supervisorctl restart langmister
 
 sudo supervisorctl restart all
 
