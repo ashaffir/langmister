@@ -130,3 +130,5 @@ dmypy.json
 
 # Statis and themes
 themes
+*.wav
+*transcript*.txt
